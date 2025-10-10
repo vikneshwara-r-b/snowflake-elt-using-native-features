@@ -70,7 +70,7 @@ create or replace table modern_db.bronze.order_raw (
 
 
 -- Create the Snowpipe for customers data
-CREATE OR REPLACE PIPE copy_customer_raw_data_pipe
+CREATE OR REPLACE PIPE modern_db.source.copy_customer_raw_data_pipe
 AUTO_INGEST = TRUE
 AS
 copy into modern_db.bronze.customer_raw from 
@@ -85,7 +85,7 @@ from @modern_db.source.landing_stage/customer/ as t
 file_format = (format_name = 'modern_db.source.csv_format');
 
 -- Create the Snowpipe for order data
-CREATE OR REPLACE PIPE copy_order_raw_data_pipe
+CREATE OR REPLACE PIPE modern_db.source.copy_order_raw_data_pipe
 AUTO_INGEST = TRUE
 AS
 copy into modern_db.bronze.order_raw from 

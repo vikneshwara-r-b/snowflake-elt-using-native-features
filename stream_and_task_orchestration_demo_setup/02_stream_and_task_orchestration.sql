@@ -1,14 +1,14 @@
 -- run copy command and check data set
- create or replace task classic_db.bronze.root_task
+ create or replace task classic_db.orchestration.root_task
 	warehouse=compute_wh
 	schedule='60 minutes'
 	as select current_role();
 
     
 
-    create or replace task classic_db.bronze.copy_to_customer_bronze_task
+    create or replace task classic_db.orchestration.copy_to_customer_bronze_task
     warehouse = compute_wh
-    after classic_db.bronze.root_task
+    after classic_db.orchestration.root_task
     as
     copy into classic_db.bronze.customer_raw from 
     (
@@ -22,9 +22,9 @@
     file_format = (format_name = 'classic_db.source.csv_format');
 
     -- order data
-    create or replace task classic_db.bronze.copy_to_order_bronze_task
+    create or replace task classic_db.orchestration.copy_to_order_bronze_task
     warehouse = compute_wh
-    after classic_db.bronze.root_task
+    after classic_db.orchestration.root_task
     as
     copy into classic_db.bronze.order_raw from 
     (
@@ -38,9 +38,9 @@
     file_format = (format_name = 'classic_db.source.csv_format');
 
     -- creating task to copy data from stream to clean customer table
-create or replace task classic_db.bronze.populate_curated_customer_task
+create or replace task classic_db.orchestration.populate_curated_customer_task
     warehouse = compute_wh
-    after classic_db.bronze.copy_to_customer_bronze_task
+    after classic_db.orchestration.copy_to_customer_bronze_task
     when system$stream_has_data('classic_db.bronze.customer_raw_stm')
         as
     merge into classic_db.silver.customer_curated target_clean 
@@ -92,9 +92,9 @@ create or replace task classic_db.bronze.populate_curated_customer_task
 
     
 -- clean order task 
-    create or replace task classic_db.bronze.populate_curated_order_task
+    create or replace task classic_db.orchestration.populate_curated_order_task
     warehouse = compute_wh
-    after classic_db.bronze.copy_to_order_bronze_task
+    after classic_db.orchestration.copy_to_order_bronze_task
     when system$stream_has_data('classic_db.bronze.order_raw_stm')
         as
     merge into classic_db.silver.order_curated target_clean 
@@ -148,9 +148,9 @@ create or replace task classic_db.bronze.populate_curated_customer_task
 
 -- task to populate 
 -- the merge statement
-create or replace task classic_db.bronze.populate_dim_customer_task
+create or replace task classic_db.orchestration.populate_dim_customer_task
     warehouse = compute_wh
-    after classic_db.bronze.populate_curated_customer_task
+    after classic_db.orchestration.populate_curated_customer_task
     when system$stream_has_data('classic_db.silver.customer_curated_stm')
         as
     merge into classic_db.gold.dim_customer to_dim 
@@ -190,9 +190,9 @@ create or replace task classic_db.bronze.populate_dim_customer_task
 
 
     -- date is populated
-    create or replace task classic_db.bronze.populate_dim_date_task
+    create or replace task classic_db.orchestration.populate_dim_date_task
     warehouse = compute_wh
-    after classic_db.bronze.populate_curated_order_task
+    after classic_db.orchestration.populate_curated_order_task
     when system$stream_has_data('classic_db.silver.order_curated_stm_for_dt')
         as
     merge into classic_db.gold.dim_date to_dim 
@@ -217,9 +217,9 @@ create or replace task classic_db.bronze.populate_dim_customer_task
         
     );
 
-    create or replace task classic_db.bronze.populate_dim_priority_task
+    create or replace task classic_db.orchestration.populate_dim_priority_task
     warehouse = compute_wh
-    after classic_db.bronze.populate_curated_order_task
+    after classic_db.orchestration.populate_curated_order_task
     when system$stream_has_data('classic_db.silver.order_curated_stm_for_priority')
         as
     merge into classic_db.gold.dim_priority to_dim 
@@ -239,9 +239,9 @@ create or replace task classic_db.bronze.populate_dim_customer_task
     );
 
 
-   create or replace task classic_db.bronze.populate_fact_order_task
+   create or replace task classic_db.orchestration.populate_fact_order_task
     warehouse = compute_wh
-    after classic_db.bronze.populate_dim_customer_task,classic_db.bronze.populate_dim_date_task,classic_db.bronze.populate_dim_priority_task
+    after classic_db.orchestration.populate_dim_customer_task,classic_db.orchestration.populate_dim_date_task,classic_db.orchestration.populate_dim_priority_task
     when system$stream_has_data('classic_db.silver.order_curated_stm')
         as
     merge into classic_db.gold.fact_order to_fact 

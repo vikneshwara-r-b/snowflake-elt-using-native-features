@@ -14,7 +14,7 @@ create or replace warehouse dt_transform_wh
     initially_suspended = True;
 
 CREATE OR REPLACE DYNAMIC TABLE modern_db.silver.customer_curated_dt
-    TARGET_LAG='5 minutes'
+    TARGET_LAG='downstream'
     WAREHOUSE=dt_transform_wh
 AS
 SELECT
@@ -29,12 +29,12 @@ SELECT
     load_row_number,
     load_file_name
 FROM modern_db.bronze.customer_raw
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY cust_key ORDER BY load_ts DESC) = 1
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY cust_key ORDER BY load_ts DESC) = 1;
 
      
 -- order dynamic table
 CREATE OR REPLACE DYNAMIC TABLE modern_db.silver.order_curated_dt
-    TARGET_LAG='5 minutes'
+    TARGET_LAG='downstream'
     WAREHOUSE=dt_transform_wh
 AS
     SELECT
@@ -50,7 +50,7 @@ AS
         load_row_number,
         load_file_name
     FROM modern_db.bronze.order_raw
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY order_key ORDER BY load_ts DESC) = 1
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY order_key ORDER BY load_ts DESC) = 1;
 
     -- customer dimension dim table
 CREATE OR REPLACE DYNAMIC TABLE modern_db.gold.dim_customer_dt

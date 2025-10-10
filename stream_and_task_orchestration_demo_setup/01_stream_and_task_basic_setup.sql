@@ -19,7 +19,7 @@ comment = 'this is silver schema in classic_db database';
 create or replace schema gold
 comment = 'this is gold schema in classic_db database';
 create or replace schema orchestration
-comment = 'this schema would store all task definitions and orchestration metadata'
+comment = 'this schema would store all task definitions and orchestration metadata';
 -- Create file format.
 -- --------------------------
 create or replace file format classic_db.source.csv_format
@@ -76,6 +76,16 @@ create or replace table classic_db.bronze.order_raw (
 create or replace stream classic_db.bronze.order_raw_stm 
     on table classic_db.bronze.order_raw
     append_only = true;
+
+-- 3 stream for differ logic processing
+create or replace stream classic_db.silver.order_curated_stm 
+    on table classic_db.silver.order_curated;
+    
+create or replace stream classic_db.silver.order_curated_stm_for_dt 
+    on table classic_db.silver.order_curated;
+    
+create or replace stream classic_db.silver.order_curated_stm_for_priority 
+    on table classic_db.silver.order_curated;
 
 
 -- creating tables in silver layer
