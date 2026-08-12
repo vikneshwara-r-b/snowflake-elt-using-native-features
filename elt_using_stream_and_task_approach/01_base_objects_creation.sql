@@ -1,6 +1,12 @@
 -- Select role and warehoue
 -- --------------------------------
 use role sysadmin;
+
+create warehouse compute_wh 
+warehouse_size = 'x-small' 
+min_cluster_count = 1 
+max_cluster_count = 1;
+
 use warehouse compute_wh;
 
 -- Make sure that you have privileges to resume the task
