@@ -2,7 +2,7 @@
 -- --------------------------------
 use role sysadmin;
 
-create warehouse compute_wh 
+create or replace warehouse compute_wh 
 warehouse_size = 'x-small' 
 min_cluster_count = 1 
 max_cluster_count = 1;
